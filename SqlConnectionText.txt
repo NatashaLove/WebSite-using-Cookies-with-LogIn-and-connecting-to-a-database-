@@ -1,0 +1,22 @@
+        private SqlConnection sqlConnection()
+        {
+            SqlConnection conn;
+
+            try
+            {
+                conn = new SqlConnection(
+                    "Data Source=184.168.194.55;" +
+                    "Initial Catalog=classroom;" +
+                    "Integrated Security=false;" +
+                    "UID=profmorris;" +
+                    "PWD=Lec2g#08"
+                );
+            }
+            catch (ArgumentException ex)
+            {
+                lblErrors.Text = String.Format(ex.Message);
+                conn = null;
+            }
+
+            return conn;
+        }

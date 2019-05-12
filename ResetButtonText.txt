@@ -1,0 +1,3 @@
+            txtName.Text = "";
+            txtPassword.Text = "";
+            lblError.Text = "";

@@ -1,0 +1,103 @@
+            MD5Cng md5 = new MD5Cng();
+            StringBuilder sb = new StringBuilder();
+
+            string passhash;
+            string username = txtName.Text;
+
+            byte[] hashbytes = md5.ComputeHash(Encoding.ASCII.GetBytes(txtPassword.Text));
+
+            foreach(byte b in hashbytes)
+            {
+                sb.Append(b.ToString("X2")); 
+            }
+
+            passhash = sb.ToString();
+
+            SqlConnection connection = sqlConnection();
+
+            if (connection != null)
+            {
+                try
+                {
+					// check for connection state
+                    if (connection.State == System.Data.ConnectionState.Closed)
+                    {
+                        connection.Open();
+                    }
+
+                    string userCheckQuery = "SELECT COUNT(*) " +
+                        " FROM Persons " +
+                        " WHERE Person_UName = @uname " +
+                        " AND Person_MD5 = @password ";
+
+                    SqlCommand sqlCommand = new SqlCommand(userCheckQuery, connection);
+
+                    sqlCommand.Parameters.AddWithValue("@uname", username);
+                    sqlCommand.Parameters.AddWithValue("@password", passhash);
+
+                    if ((int)sqlCommand.ExecuteScalar() == 0)
+                    {
+                        lblErrors.Text += "User does not exist.";
+                    }
+                    else
+                    {
+						// create initial cookie
+						
+                        string studentQuery = "SELECT Student_ID " +
+                            " FROM Students " +
+                            " JOIN Persons ON Students.Person_ID = Persons.Person_ID " +
+                            " WHERE Persons.Person_UName = @uname " +
+                            " AND Persons.Person_MD5 = @password ";
+
+                        SqlCommand studentCommand = new SqlCommand(studentQuery, connection);
+
+                        studentCommand.Parameters.AddWithValue("@uname", username);
+                        studentCommand.Parameters.AddWithValue("@password", passhash);
+
+                        int student_id = (studentCommand.ExecuteScalar() != null) ? (int)studentCommand.ExecuteScalar() : 0;
+
+                        if (student_id == 0)
+                        {
+                            string teacherQuery = "SELECT Employee_ID 'Teacher_ID' " +
+                                " FROM Employees" +
+                                " JOIN Persons ON Employees.Person_ID = Persons.Person_ID " +
+                                " WHERE Persons.Person_UName = @uname " +
+                                " AND Persons.Person_MD5 = @password ";
+
+                            SqlCommand teacherCommand = new SqlCommand(teacherQuery, connection);
+
+                            teacherCommand.Parameters.AddWithValue("@uname", username);
+                            teacherCommand.Parameters.AddWithValue("@password", passhash);
+
+                            int teacher_id = (studentCommand.ExecuteScalar() != null) ? (int)teacherCommand.ExecuteScalar() : 0;
+							
+							// close connection
+							
+							// create cookie for teacher_id
+							
+							// add cookie
+							
+							// redirect to TeacherView.aspx
+							
+                        }
+                        else
+                        {
+							// close connection
+							
+							// create cookie for student_id
+							
+							// add cookie
+							
+							// redirect to StudentView.aspx
+							
+                        }
+                    }
+
+                    connection.Close();
+                }
+                catch (Exception ex)
+                {
+                    lblErrors.Text = String.Format("Caught this exception: " + ex.Message);
+                }
+            }
+
